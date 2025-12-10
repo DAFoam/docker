@@ -34,16 +34,14 @@ RUN mkdir -p ${FOAM_INST_DIR} && mkdir -p /home/dockeruser/mount
 
 # Download and extract OpenFOAM
 WORKDIR ${FOAM_INST_DIR}
-RUN wget -q https://gitlab.com/openfoam/openfoam/-/archive/OpenFOAM-v${FOAM_VERSION}/openfoam-OpenFOAM-v${FOAM_VERSION}.tar.gz && \
-    tar -xzf openfoam-OpenFOAM-v${FOAM_VERSION}.tar.gz && \
-    mv openfoam-OpenFOAM-v${FOAM_VERSION} OpenFOAM-v${FOAM_VERSION} && \
-    rm openfoam-OpenFOAM-v${FOAM_VERSION}.tar.gz
+RUN wget -q https://dl.openfoam.com/source/v${FOAM_VERSION}/OpenFOAM-v${FOAM_VERSION}.tgz && \
+    tar -xzf OpenFOAM-v${FOAM_VERSION}.tgz && \
+    rm OpenFOAM-v${FOAM_VERSION}.tgz
 
 # Download and extract ThirdParty
-RUN wget -q https://gitlab.com/openfoam/ThirdParty-common/-/archive/v${FOAM_VERSION}/ThirdParty-common-v${FOAM_VERSION}.tar.gz && \
-    tar -xzf ThirdParty-common-v${FOAM_VERSION}.tar.gz && \
-    mv ThirdParty-common-v${FOAM_VERSION} ThirdParty-v${FOAM_VERSION} && \
-    rm ThirdParty-common-v${FOAM_VERSION}.tar.gz
+RUN wget -q https://dl.openfoam.com/source/v${FOAM_VERSION}/ThirdParty-v${FOAM_VERSION}.tgz && \
+    tar -xzf ThirdParty-v${FOAM_VERSION}.tgz && \
+    rm ThirdParty-v${FOAM_VERSION}.tgz
 
 # Set up environment
 WORKDIR ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION}
@@ -51,7 +49,7 @@ RUN echo "source ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION}/etc/bashrc" >> /home
 
 # Compile OpenFOAM (parallel build)
 WORKDIR ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION}
-RUN /bin/bash -c "source etc/bashrc && ./Allwmake -j -s -q -l"
+RUN /bin/bash -c "source etc/bashrc && export WM_QUIET=true && ./Allwmake -j -s -q -l"
 
 # Clean intermediate build files but keep source and compilation tools
 RUN /bin/bash -c "source etc/bashrc && wclean all" && \
