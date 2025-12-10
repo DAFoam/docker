@@ -16,14 +16,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     cmake \
     flex \
+    bison \
     libfl-dev \
-    libgmp-dev \
-    libmpfr-dev \
+    libcgal-dev \
     libopenmpi-dev \
     openmpi-bin \
+    libscotch-dev \
+    libreadline-dev \
+    libncurses-dev \
     sudo \
     wget \
-    zlib1g-dev \
     vim \
     git \
     && apt-get clean \
@@ -48,11 +50,11 @@ RUN mkdir -p ${FOAM_INST_DIR} && mkdir -p /home/dockeruser/mount && \
     rm ThirdParty-v${FOAM_VERSION}.tgz && \
     cd ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION} && \
     echo "source ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION}/etc/bashrc" >> /home/dockeruser/.bashrc && \
-    /bin/bash -c "source etc/bashrc && ./Allwmake -j -q" && \
-    /bin/bash -c "source etc/bashrc && wclean all" && \
-    find ${FOAM_INST_DIR} -type f -name "*.o" -delete && \
-    find ${FOAM_INST_DIR} -type f -name "*.dep" -delete && \
-    rm -rf /home/dockeruser/.cache/*
+    /bin/bash -c "source etc/bashrc && export WM_QUIET=true && \
+        cd ${FOAM_INST_DIR}/ThirdParty-v${FOAM_VERSION} && ./Allwmake -j -q && \
+        cd ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION} && ./Allwmake -j -q && \
+        wclean all && rm -rf build && \
+        rm -rf /home/dockeruser/.cache/*"
 
 # Set working directory
 WORKDIR /home/dockeruser
