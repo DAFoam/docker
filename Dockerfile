@@ -8,7 +8,7 @@ FROM dafoam/openfoam:thirdparty
 USER dockeruser
 
 # Download, extract, compile, and clean in ONE layer
-RUN cd /home/dockeruser/OpenFOAM-v2506 && \
+RUN cd /home/dockeruser/OpenFOAM/OpenFOAM-v2506 && \
     source etc/bashrc && export WM_QUIET=true && ./Allwmake -j && \
     wclean all && rm -rf build && \
     rm -rf /home/dockeruser/.cache/*
