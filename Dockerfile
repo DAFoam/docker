@@ -21,7 +21,7 @@ RUN mkdir -p ${FOAM_INST_DIR} && mkdir -p /home/dockeruser/mount && \
     /bin/bash -c "source etc/bashrc && export WM_QUIET=true && \
         #cd ${FOAM_INST_DIR}/ThirdParty-v${FOAM_VERSION} && ./Allwmake -j && rm -rf source && \
         cd ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION} && ./Allwmake -j && \
-        wclean all && rm -rf build && \
+        #wclean all && rm -rf build && \
         rm -rf /home/dockeruser/.cache/*"
 
 # Set working directory
