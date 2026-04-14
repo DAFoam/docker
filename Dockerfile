@@ -7,7 +7,6 @@ FROM ubuntu:24.04
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 # Set OpenFOAM version and install directory
-ENV FOAM_VERSION=1812
 ENV FOAM_INST_DIR=/home/dafoamuser/dafoam/OpenFOAM
 
 # Install minimal dependencies (build + runtime)
@@ -41,18 +40,21 @@ USER dafoamuser
 
 # Download, extract, compile, and clean in ONE layer
 RUN mkdir -p /home/dafoamuser/dafoam && mkdir -p ${FOAM_INST_DIR} && mkdir -p /home/dafoamuser/mount && \
+    echo "source ${FOAM_INST_DIR}/OpenFOAM-v1812/etc/bashrc" >> /home/dafoamuser/.bashrc && \
     cd ${FOAM_INST_DIR} && \
-    wget -q https://dl.openfoam.com/source/v${FOAM_VERSION}/OpenFOAM-v${FOAM_VERSION}.tgz && \
-    tar -xzf OpenFOAM-v${FOAM_VERSION}.tgz && \
-    rm OpenFOAM-v${FOAM_VERSION}.tgz && \
-    wget -q https://dl.openfoam.com/source/v${FOAM_VERSION}/ThirdParty-v${FOAM_VERSION}.tgz && \
-    tar -xzf ThirdParty-v${FOAM_VERSION}.tgz && \
-    rm ThirdParty-v${FOAM_VERSION}.tgz && \
-    cd ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION} && \
-    echo "source ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION}/etc/bashrc" >> /home/dafoamuser/.bashrc && \
+    wget https://sourceforge.net/projects/openfoam/files/v1812/OpenFOAM-v1812.tgz/download -O OpenFOAM-v1812.tgz && \
+    wget https://sourceforge.net/projects/openfoam/files/v1812/ThirdParty-v1812.tgz/download -O ThirdParty-v1812.tgz && \
+    tar -xvf OpenFOAM-v1812.tgz && \
+    tar -xvf ThirdParty-v1812.tgz && \
+    rm -rf OpenFOAM-v1812.tgz ThirdParty-v1812.tgz && \
+    cd ${FOAM_INST_DIR}/OpenFOAM-v1812 && \
+    wget https://github.com/DAFoam/files/releases/download/v1.0.0/OpenFOAM-v1812-patch-files.tar.gz && \
+    tar -xvf OpenFOAM-v1812-patch-files.tar.gz && \
+    cd OpenFOAM-v1812-patch-files && \
+    ./runPatch.sh && \
+    cd .. && \
     /bin/bash -c "source etc/bashrc && export WM_QUIET=true && \
-        cd ${FOAM_INST_DIR}/ThirdParty-v${FOAM_VERSION} && ./Allwmake -j -q && \
-        cd ${FOAM_INST_DIR}/OpenFOAM-v${FOAM_VERSION} && ./Allwmake -j -q && \
+        cd ${FOAM_INST_DIR}/OpenFOAM-v1812 && ./Allwmake -j -q && \
         wclean all && rm -rf build && \
         rm -rf /home/dafoamuser/.cache/*"
 
