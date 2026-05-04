@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -16,8 +16,29 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/openfoam:2506 .
+      - name: Build base Docker image
+        run: docker build -t dafoam-base:latest .
+
+      - name: Start detached container
+        run: docker run -d --name build-container dafoam-base:latest sleep infinity
+
+      - name: Copy install script into container
+        run: docker cp install.sh build-container:/home/dafoamuser/install.sh
+
+      - name: Run OpenFOAM installation inside container
+        run: docker exec -u dafoamuser build-container bash /home/dafoamuser/install.sh
+
+      - name: Commit container as final image
+        run: |
+          docker commit \
+            --change='WORKDIR /home/dafoamuser/mount' \
+            --change='CMD ["/bin/bash"]' \
+            build-container \
+            dafoam/opt-packages:dockerbuild
 
       - name: Push to Docker Hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/openfoam:2506
+        run: docker push dafoam/opt-packages:dockerbuild
+
+      - name: Cleanup container
+        if: always()
+        run: docker rm -f build-container
